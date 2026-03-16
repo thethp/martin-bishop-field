@@ -1,0 +1,41 @@
+.carousel {
+  width: 60%;
+  height: 380px;
+  background-color: var(--background);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+  margin: 0 auto;
+
+  .control {
+    width: 12%;
+    height: 100%;
+    background: black;
+    opacity: .35;
+    position: absolute;
+    background-image: url('/caret.svg');
+    background-repeat: no-repeat;
+    background-size: 20%;
+    background-position: center;
+    cursor: pointer;
+    transition: opacity .7s;
+
+    &:hover {
+      opacity: .6;
+    }
+
+    &.left {
+      left: 0;
+      transform: scaleX(-1)
+    }
+
+    &.right {
+      right: 0;
+    }
+  }
+}
+
+img.carousel {
+  width: auto;
+}

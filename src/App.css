@@ -1,0 +1,35 @@
+#root {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  --primary: #4F6F52;
+  --secondary: #5E7C8A;
+  --accent: #7A2E2E;
+  --background: #F4F3EF;
+  --neutral: #8A817C;
+  --page-bg: #f8faf9;
+}
+
+main {
+  background-color: var(--background);
+  color: var(--neutral);
+  padding: 20px;
+  min-height: calc(100vh - 168px);
+
+  p {
+    width: 80%;
+    margin: 0 auto 16px;
+  }
+}
+
+button.secondary {
+  background: var(--secondary);
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
