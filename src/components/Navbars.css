@@ -1,50 +1,219 @@
-header, footer {
-  background-color: var(--primary);
+/* =====================
+   HEADER
+   ===================== */
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-direction: row;
+  gap: 24px;
+  padding: 14px 36px;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.35s, box-shadow 0.35s, backdrop-filter 0.35s;
+}
+
+header.scrolled {
+  background: var(--primary);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.18);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: white;
+  flex-shrink: 0;
+}
+
+.logo {
+  height: 42px;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+}
+
+.title-main {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  line-height: 1.25;
+}
+
+.title-sub {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.68);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+nav {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
   gap: 20px;
-  padding: 12px 16px;
+}
 
-  a, a:hover, a:visited {
-    display: flex;
-    color: var(--background);
-    cursor: pointer;
-  }
+nav a {
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+  letter-spacing: 0.02em;
+}
 
-  a:hover {
-    text-decoration: underline;
-  }
+nav a:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
 
-  .logo {
-    height: 3em;
+nav a:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.nav-cta {
+  background: var(--accent) !important;
+  color: white !important;
+  padding: 8px 18px;
+  border-radius: 4px;
+  font-weight: 600 !important;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.nav-cta:hover {
+  background: var(--accent-hover) !important;
+  transform: translateY(-1px);
+}
+
+/* =====================
+   FOOTER
+   ===================== */
+
+footer {
+  background: #182818;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.footer-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 56px 32px 48px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 52px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.footer-logo {
+  height: 50px;
+  opacity: 0.65;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.footer-brand div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.footer-brand strong {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: white;
+  font-weight: 600;
+}
+
+.footer-brand span {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.42);
+  line-height: 1.5;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-col h4 {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 4px;
+}
+
+.footer-col a {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color 0.2s;
+  line-height: 1.55;
+}
+
+.footer-col a:hover {
+  color: white;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding: 18px 32px;
+  font-size: 0.77rem;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* =====================
+   RESPONSIVE
+   ===================== */
+
+@media (max-width: 860px) {
+  header {
+    padding: 12px 20px;
   }
 
   .title {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-
-    h2, h5 {
-      padding: 0;
-      margin: 0;
-    }
+    display: none;
   }
 
   nav {
-    margin-left: auto;
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
+    gap: 14px;
+  }
 
-    a {
-      color: white;
+  nav a:not(.nav-cta) {
+    display: none;
+  }
 
-      &:hover {
-        color: white;
-        text-decoration: underline;
-      }
-    }
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 40px 24px 32px;
+  }
+}
+
+@media (max-width: 580px) {
+  .logo {
+    height: 36px;
   }
 }

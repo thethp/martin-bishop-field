@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.martin-bishopfield.com)",
+      "WebSearch",
+      "WebFetch(domain:martin-bishopfield.com)",
+      "WebFetch(domain:www.guilfordfire.com)",
+      "WebFetch(domain:www.yelp.com)",
+      "Bash(node_modules/.pnpm/vite@7.3.1_@types+node@24.10.9/node_modules/vite/bin/vite.js build:*)",
+      "Bash(claude mcp:*)"
+    ]
+  }
+}
