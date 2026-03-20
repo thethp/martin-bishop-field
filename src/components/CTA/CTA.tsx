@@ -1,4 +1,4 @@
-import 'CTA.css';
+import './CTA.css';
 
 export function CTASection() {
   return (
