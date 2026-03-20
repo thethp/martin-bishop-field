@@ -12,13 +12,13 @@ header {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   transition: background 0.35s, box-shadow 0.35s, backdrop-filter 0.35s;
-}
 
-header.scrolled {
-  background: var(--primary);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.18);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  &.scrolled {
+    background: var(--primary);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.18);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 .header-brand {
@@ -59,25 +59,25 @@ nav {
   display: flex;
   align-items: center;
   gap: 20px;
-}
 
-nav a {
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: color 0.2s;
-  letter-spacing: 0.02em;
-}
+  a {
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+    letter-spacing: 0.02em;
 
-nav a:hover {
-  color: rgba(255, 255, 255, 0.8);
-}
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
 
-nav a:focus-visible {
-  outline: 2px solid white;
-  outline-offset: 4px;
-  border-radius: 2px;
+    &:focus-visible {
+      outline: 2px solid white;
+      outline-offset: 4px;
+      border-radius: 2px;
+    }
+  }
 }
 
 .nav-cta {
@@ -87,11 +87,11 @@ nav a:focus-visible {
   border-radius: 4px;
   font-weight: 600 !important;
   transition: background 0.2s, transform 0.15s;
-}
 
-.nav-cta:hover {
-  background: var(--accent-hover) !important;
-  transform: translateY(-1px);
+  &:hover {
+    background: var(--accent-hover) !important;
+    transform: translateY(-1px);
+  }
 }
 
 footer {
@@ -113,6 +113,25 @@ footer {
   display: flex;
   align-items: flex-start;
   gap: 16px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  strong {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: white;
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.42);
+    line-height: 1.5;
+  }
 }
 
 .footer-logo {
@@ -122,51 +141,32 @@ footer {
   margin-top: 3px;
 }
 
-.footer-brand div {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.footer-brand strong {
-  font-family: 'Playfair Display', serif;
-  font-size: 1rem;
-  color: white;
-  font-weight: 600;
-}
-
-.footer-brand span {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.42);
-  line-height: 1.5;
-}
-
 .footer-col {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
 
-.footer-col h4 {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-  margin-bottom: 4px;
-}
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 4px;
+  }
 
-.footer-col a {
-  color: rgba(255, 255, 255, 0.62);
-  font-size: 0.875rem;
-  text-decoration: none;
-  transition: color 0.2s;
-  line-height: 1.55;
-}
+  a {
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: color 0.2s;
+    line-height: 1.55;
 
-.footer-col a:hover {
-  color: white;
+    &:hover {
+      color: white;
+    }
+  }
 }
 
 .footer-bottom {
@@ -175,10 +175,6 @@ footer {
   font-size: 0.77rem;
   color: rgba(255, 255, 255, 0.25);
 }
-
-/* =====================
-   RESPONSIVE
-   ===================== */
 
 @media (max-width: 860px) {
   header {
@@ -191,10 +187,10 @@ footer {
 
   nav {
     gap: 14px;
-  }
 
-  nav a:not(.nav-cta) {
-    display: none;
+    a:not(.nav-cta) {
+      display: none;
+    }
   }
 
   .footer-content {

@@ -11,21 +11,21 @@
   border-radius: 8px;
   transition: transform 0.22s, box-shadow 0.22s;
   cursor: pointer;
-}
 
-.gallery-item:hover {
-  transform: scale(1.025);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+  &:hover {
+    transform: scale(1.025);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+  }
 }
 
 button.gallery-item {
   border: none;
   padding: 0;
-}
 
-button.gallery-item:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
+  &:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+  }
 }
 
 .modal-backdrop {
@@ -66,27 +66,27 @@ button.gallery-item:focus-visible {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--white-glass);
   color: white;
   font-size: 1.6rem;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid var(--white-glass-border);
   transition: background 0.2s;
   z-index: 201;
-}
 
-.modal-close:hover {
-  background: rgba(255, 255, 255, 0.28);
+  &:hover {
+    background: var(--white-glass-hover);
+  }
 }
 
 .modal-arrow {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--white-glass);
   color: white;
   width: 52px;
   height: 52px;
@@ -95,18 +95,18 @@ button.gallery-item:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid var(--white-glass-border);
   transition: background 0.2s;
   z-index: 201;
   line-height: 1;
-}
 
-.modal-arrow:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
+  &:hover {
+    background: var(--white-glass-hover);
+  }
 
-.modal-arrow.left  { left: 24px; }
-.modal-arrow.right { right: 24px; }
+  &.left  { left: 24px; }
+  &.right { right: 24px; }
+}
 
 .modal-dots {
   position: fixed;

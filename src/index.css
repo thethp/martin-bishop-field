@@ -14,6 +14,10 @@
   --text-light: #56695a;
   --border: #e0ddd8;
 
+  --white-glass:        rgba(255, 255, 255, 0.16);
+  --white-glass-border: rgba(255, 255, 255, 0.25);
+  --white-glass-hover:  rgba(255, 255, 255, 0.30);
+
   font-family: 'Inter', system-ui, Helvetica, Arial, sans-serif;
   line-height: 1.6;
   font-weight: 400;

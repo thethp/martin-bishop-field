@@ -13,7 +13,7 @@ const AMENITIES = [
 
 export function AmenitiesSection() {
   return (
-    <section id="amenities" className="section section-green">
+    <section id="amenities" className="section section-amenities">
       <div className="container">
         <h2>What's On-Site</h2>
         <p className="section-sub">Everything you need for a great event, already here.</p>

@@ -26,6 +26,14 @@
   padding: 0 24px;
   max-width: 760px;
   z-index: 1;
+
+  h1 {
+    font-size: clamp(2.6rem, 6.5vw, 4.8rem);
+    color: var(--white);
+    margin-bottom: 22px;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
+    line-height: 1.08;
+  }
 }
 
 .hero-label {
@@ -35,14 +43,6 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.92);
   margin-bottom: 20px;
-}
-
-.hero-content h1 {
-  font-size: clamp(2.6rem, 6.5vw, 4.8rem);
-  color: var(--white);
-  margin-bottom: 22px;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
-  line-height: 1.08;
 }
 
 .hero-sub {
@@ -57,7 +57,7 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--white-glass);
   color: white;
   width: 50px;
   height: 50px;
@@ -68,20 +68,15 @@
   justify-content: center;
   transition: background 0.2s;
   backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid var(--white-glass-border);
   line-height: 1;
-}
 
-.hero-arrow:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
+  &:hover {
+    background: var(--white-glass-hover);
+  }
 
-.hero-arrow.left {
-  left: 28px;
-}
-
-.hero-arrow.right {
-  right: 28px;
+  &.left  { left: 28px; }
+  &.right { right: 28px; }
 }
 
 .hero-dots {
@@ -101,14 +96,20 @@
   border: 1.5px solid rgba(255, 255, 255, 0.6);
   transition: background 0.2s, transform 0.2s;
   cursor: pointer;
+
+  &.active {
+    background: var(--white);
+    transform: scale(1.25);
+  }
+
+  &:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 3px;
+  }
 }
 
-.dot.active {
-  background: var(--white);
-  transform: scale(1.25);
-}
-
-.dot:focus-visible {
-  outline: 2px solid white;
-  outline-offset: 3px;
+@media (max-width: 580px) {
+  .hero-arrow {
+    display: none;
+  }
 }

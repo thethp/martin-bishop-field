@@ -9,15 +9,15 @@
   background: var(--white);
   cursor: pointer;
   transition: background 0.15s;
-}
 
-.faq-item:last-child {
-  border-bottom: none;
-}
+  &:last-child {
+    border-bottom: none;
+  }
 
-.faq-item.open,
-.faq-item:hover {
-  background: #fbfaf7;
+  &.open,
+  &:hover {
+    background: #fbfaf7;
+  }
 }
 
 .faq-question {
@@ -35,11 +35,11 @@
   background: none;
   border: none;
   cursor: pointer;
-}
 
-.faq-question:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: -2px;
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
 }
 
 .faq-icon {

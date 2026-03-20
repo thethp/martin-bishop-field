@@ -7,6 +7,18 @@
 
 .step {
   text-align: center;
+
+  h3 {
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
 }
 
 .step-number {
@@ -18,14 +30,14 @@
   line-height: 1;
 }
 
-.step h3 {
-  font-size: 1.05rem;
-  color: var(--text);
-  margin-bottom: 10px;
+@media (max-width: 960px) {
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.step p {
-  color: var(--text-light);
-  font-size: 0.9rem;
-  line-height: 1.65;
+@media (max-width: 580px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
 }
