@@ -61,15 +61,15 @@ function GalleryModal({ images, index, onClose }: { images: string[]; index: num
       aria-modal="true"
       aria-label={`Photo ${idx + 1} of ${images.length}`}
     >
-      <button ref={closeRef} className="modal-close" onClick={onClose} aria-label="Close photo viewer">&times;</button>
-      <button className="modal-arrow left"  onClick={e => { e.stopPropagation(); prev(); }} aria-label="Previous photo">&#8249;</button>
+      <button ref={closeRef} className="btn-glass modal-close" onClick={onClose} aria-label="Close photo viewer">&times;</button>
+      <button className="btn-glass modal-arrow left"  onClick={e => { e.stopPropagation(); prev(); }} aria-label="Previous photo">&#8249;</button>
       <img
         className="modal-img"
         src={images[idx]}
         alt={`Martin-Bishop Field event photo ${idx + 1} of ${images.length}`}
         onClick={e => e.stopPropagation()}
       />
-      <button className="modal-arrow right" onClick={e => { e.stopPropagation(); next(); }} aria-label="Next photo">&#8250;</button>
+      <button className="btn-glass modal-arrow right" onClick={e => { e.stopPropagation(); next(); }} aria-label="Next photo">&#8250;</button>
       <div className="modal-dots" role="group" aria-label="Photo navigation">
         {images.map((_, i) => (
           <button

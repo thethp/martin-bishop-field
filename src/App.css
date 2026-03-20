@@ -68,9 +68,8 @@
   background: var(--background);
 }
 
-.btn-primary {
+.btn {
   display: inline-block;
-  background: var(--accent);
   color: var(--white);
   padding: 13px 32px;
   border-radius: 4px;
@@ -80,54 +79,37 @@
   transition: background 0.2s, transform 0.15s;
 
   &:hover {
-    background: var(--accent-hover);
     transform: translateY(-1px);
   }
 }
 
-.btn-green {
-  display: inline-block;
-  background: var(--primary);
-  color: var(--white);
-  padding: 13px 32px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 0.975rem;
-  letter-spacing: 0.03em;
-  transition: background 0.2s, transform 0.15s;
+.btn-primary {
+  background: var(--accent);
 
   &:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
+    background: var(--accent-hover);
+  }
+}
+
+.btn-glass {
+  background: var(--white-glass);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--white-glass-border);
+  transition: background 0.2s;
+  line-height: 1;
+
+  &:hover {
+    background: var(--white-glass-hover);
   }
 }
 
 .btn-large {
   padding: 16px 42px;
   font-size: 1.05rem;
-}
-
-.section-cta {
-  background: var(--primary-dark);
-  text-align: center;
-
-  h2 {
-    color: var(--white);
-    margin-bottom: 14px;
-  }
-
-  p {
-    color: rgba(255, 255, 255, 0.75);
-    font-size: 1.05rem;
-    margin-bottom: 40px;
-  }
-}
-
-.cta-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 
 @media (max-width: 580px) {

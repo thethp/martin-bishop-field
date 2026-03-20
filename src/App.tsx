@@ -7,12 +7,14 @@ import { ReserveSection } from './components/Reserve/Reserve';
 import { DetailsSection } from './components/Details/Details';
 import { EventsSection } from './components/Events/Events';
 import { AmenitiesSection } from './components/Amenities/Amenities';
+import { CTASection } from './components/CTA/CTA';
 
 function App() {
   return (
     <>
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <Header />
+      
       <main id="main-content">
         <Hero />
 
@@ -28,18 +30,9 @@ function App() {
 
         <FaqsSection />
 
-        <section className="section section-cta">
-          <div className="container">
-            <h2>Ready to Book Your Event?</h2>
-            <p>
-              Check availability and reserve Martin-Bishop Field for your next gathering in Guilford, CT.
-            </p>
-            <div className="cta-actions">
-              <a href="/reserve" className="btn-primary btn-large">Reserve the Field</a>
-            </div>
-          </div>
-        </section>
+        <CTASection />
       </main>
+
       <Footer />
     </>
   );

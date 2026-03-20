@@ -32,10 +32,10 @@ export function Hero() {
             Weddings &nbsp;&middot;&nbsp; Family Reunions &nbsp;&middot;&nbsp; Private Parties<br />
             111 Long Hill Rd, Guilford, CT 06437
           </p>
-          <a href="/reserve" className="btn-primary btn-large">Reserve the Field</a>
+          <a href="/reserve" className="btn btn-primary btn-large">Reserve the Field</a>
         </div>
-        <button className="hero-arrow left" onClick={prev} aria-label="Previous photo">&#8249;</button>
-        <button className="hero-arrow right" onClick={next} aria-label="Next photo">&#8250;</button>
+        <button className="btn-glass hero-arrow left" onClick={prev} aria-label="Previous photo">&#8249;</button>
+        <button className="btn-glass hero-arrow right" onClick={next} aria-label="Next photo">&#8250;</button>
         <div className="hero-dots">
           {HERO_IMAGES.map((_, i) => (
             <button

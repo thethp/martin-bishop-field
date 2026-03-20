@@ -57,23 +57,10 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: var(--white-glass);
-  color: white;
   width: 50px;
   height: 50px;
-  border-radius: 50%;
   font-size: 1.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
   backdrop-filter: blur(4px);
-  border: 1px solid var(--white-glass-border);
-  line-height: 1;
-
-  &:hover {
-    background: var(--white-glass-hover);
-  }
 
   &.left  { left: 28px; }
   &.right { right: 28px; }

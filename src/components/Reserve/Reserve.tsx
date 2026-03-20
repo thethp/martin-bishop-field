@@ -39,7 +39,7 @@ export function ReserveSection() {
           ))}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <a href="/reserve" className="btn-green">Start Your Reservation</a>
+          <a href="/reserve" className="btn btn-green">Start Your Reservation</a>
         </div>
       </div>
     </section>
