@@ -1,0 +1,33 @@
+.amenity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+.amenity-item {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 22px 14px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--white);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+.amenity-notes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 36px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9rem;
+}
+
+.amenity-notes span::before {
+  content: '✓  ';
+  font-weight: 700;
+}

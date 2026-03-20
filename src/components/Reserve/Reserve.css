@@ -1,0 +1,31 @@
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  margin-bottom: 48px;
+}
+
+.step {
+  text-align: center;
+}
+
+.step-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 14px;
+  line-height: 1;
+}
+
+.step h3 {
+  font-size: 1.05rem;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.step p {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}

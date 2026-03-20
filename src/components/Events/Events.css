@@ -1,0 +1,32 @@
+.event-card {
+  background: var(--background);
+  border-radius: 10px;
+  padding: 36px 28px;
+  border: 1px solid var(--border);
+  transition: box-shadow 0.22s, transform 0.22s;
+}
+
+.event-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.09);
+  transform: translateY(-3px);
+}
+
+.event-card-bar {
+  width: 36px;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 2px;
+  margin-bottom: 20px;
+}
+
+.event-card h3 {
+  font-size: 1.3rem;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.event-card p {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
