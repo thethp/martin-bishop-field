@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import './hero.css';
+import './Hero.css';
 
 const HERO_IMAGES = [
   'https://martin-bishopfield.com/wp-content/uploads/2016/10/pa160506.jpeg',
