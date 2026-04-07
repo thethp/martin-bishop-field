@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
+import type { Stripe } from '@stripe/stripe-js';
 import { Calendar } from './Calendar';
 import { ReservationForm } from './ReservationForm';
 import { SuccessState } from './SuccessState';
 import { ErrorState } from './ErrorState';
 import './Reserve.css';
 
-const stripePromise = loadStripe(
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
-);
+const stripePromise: Promise<Stripe | null> = fetch('/api/config')
+  .then(r => r.json())
+  .then(data => loadStripe(data.stripePublishableKey))
+  .catch(() => null);
 
 export function ReserveSection() {
   const [selectedDate, setSelectedDate] = useState('');

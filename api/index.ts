@@ -35,6 +35,9 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
   try {
     // Public routes
+    if (path === '/api/config' && method === 'GET') {
+      return jsonResponse({ stripePublishableKey: env.STRIPE_PUBLISHABLE_KEY });
+    }
     if (path === '/api/reservations/dates' && method === 'GET') {
       return getDates(env);
     }

@@ -120,7 +120,7 @@ export function sendConfirmationEmail(env: Env, r: {
 }) {
   const date = new Date(r.event_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const checkInfo = r.payment_type === 'check'
-    ? `<p><strong>Check Payment Instructions:</strong><br>Please mail a $500 deposit check within 5 business days.<br>Make payable to: [PAYEE PLACEHOLDER]<br>Mail to: [ADDRESS PLACEHOLDER]</p>`
+    ? `<p><strong>Check Payment Instructions:</strong><br>Please mail a $500 deposit check within 5 business days.<br>Make payable to: Martin Bishop Field<br>Mail to: 225 State Street, Guilford, CT 06437</p>`
     : '';
   const paymentStatus = r.amount_paid >= r.amount_total
     ? 'Paid in full'
@@ -166,7 +166,7 @@ export function sendInvoiceEmail(env: Env, r: { first_name: string; last_name: s
       <p>Hi ${r.first_name},</p>
       <p>This is a reminder that the remaining balance of <strong>$${balance}</strong> is due for your reservation on <strong>${date}</strong>.</p>
       <p>Please contact us at martinbishopfield@gmail.com to arrange payment.</p>
-      <p>You may also pay by check:<br>Make payable to: [PAYEE PLACEHOLDER]<br>Mail to: [ADDRESS PLACEHOLDER]</p>`,
+      <p>You may also pay by check:<br>Make payable to: Martin Bishop Field<br>Mail to: 225 State Street, Guilford, CT 06437</p>`,
   });
 }
 
