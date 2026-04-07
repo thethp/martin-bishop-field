@@ -14,6 +14,24 @@ interface FormData {
   paymentType: 'deposit' | 'full' | 'check';
 }
 
+const ELEMENTS_OPTIONS = {
+  appearance: {
+    theme: 'stripe' as const,
+    variables: {
+      colorPrimary: '#4F6F52',
+      colorBackground: '#ffffff',
+      colorText: '#1e2d1e',
+      colorDanger: '#7A2E2E',
+      fontFamily: 'Inter, sans-serif',
+      borderRadius: '6px',
+    },
+  },
+  mode: 'payment' as const,
+  amount: 50000,
+  currency: 'usd',
+  payment_method_types: ['card', 'link'] as const,
+};
+
 interface ReservationFormProps {
   selectedDate: string;
   stripePromise: Promise<Stripe | null>;
@@ -244,22 +262,8 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
 }
 
 export function ReservationForm({ selectedDate, stripePromise, onSuccess, onError }: ReservationFormProps) {
-  // We need Elements wrapper for Stripe, but only render payment when we have a date
-  // Elements requires appearance options matching our theme
-  const appearance = {
-    theme: 'stripe' as const,
-    variables: {
-      colorPrimary: '#4F6F52',
-      colorBackground: '#ffffff',
-      colorText: '#1e2d1e',
-      colorDanger: '#7A2E2E',
-      fontFamily: 'Inter, sans-serif',
-      borderRadius: '6px',
-    },
-  };
-
   return (
-    <Elements stripe={stripePromise} options={{ appearance, mode: 'payment', amount: 50000, currency: 'usd', payment_method_types: ['card', 'link'] }}>
+    <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
       <FormInner selectedDate={selectedDate} onSuccess={onSuccess} onError={onError} />
     </Elements>
   );
