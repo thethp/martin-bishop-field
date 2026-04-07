@@ -90,7 +90,8 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
       }
     }
 
-    return errorResponse('Not found', 404);
+    // Not an API route — serve static assets
+    return env.ASSETS.fetch(request);
   } catch (e) {
     console.error('API error:', e);
     return errorResponse('Internal server error', 500);
