@@ -38,10 +38,22 @@ function formatPhone(value: string) {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
+function checkFormFilled(form: HTMLFormElement): boolean {
+  const fd = new FormData(form);
+  const firstName = (fd.get('firstName') as string || '').trim();
+  const lastName = (fd.get('lastName') as string || '').trim();
+  const email = (fd.get('email') as string || '').trim();
+  const phone = (fd.get('phone') as string || '').trim();
+  if (!firstName || !lastName || !email || !phone) return false;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+  return true;
+}
+
 export function ReservationForm({ selectedDate, stripePromise, onSuccess, onError }: ReservationFormProps) {
   const [paymentType, setPaymentType] = useState<'deposit' | 'full' | 'check'>('deposit');
   const [paymentReady, setPaymentReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [formFilled, setFormFilled] = useState(false);
   const clientSecretRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const paymentRef = useRef<PaymentHandle>(null);
@@ -53,9 +65,17 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
     e.target.value = formatPhone(e.target.value);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (submitting || !formRef.current) return;
+  const handleFormInput = useCallback(() => {
+    if (formRef.current) {
+      setFormFilled(checkFormFilled(formRef.current));
+    }
+  }, []);
+
+  const canSubmit = formFilled && selectedDate && !submitting && (!isCardPayment || paymentReady);
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!canSubmit || !formRef.current) return;
 
     const fd = new FormData(formRef.current);
     const firstName = (fd.get('firstName') as string || '').trim();
@@ -63,10 +83,6 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
     const email = (fd.get('email') as string || '').trim();
     const phone = (fd.get('phone') as string || '').trim();
     const notes = (fd.get('notes') as string || '').trim() || null;
-
-    if (!firstName || !lastName || !email || !phone || !selectedDate) return;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
-    if (isCardPayment && !paymentReady) return;
 
     setSubmitting(true);
 
@@ -119,7 +135,7 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
   };
 
   return (
-    <form className="reservation-form" onSubmit={handleSubmit} ref={formRef} noValidate>
+    <form className="reservation-form" onSubmit={handleSubmit} onInput={handleFormInput} ref={formRef} noValidate>
       <div className="form-row">
         <label className="form-field">
           <span className="form-label">First name</span>
@@ -201,9 +217,10 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
       )}
 
       <button
-        type="submit"
+        type="button"
         className="btn btn-primary btn-large reserve-submit"
-        disabled={submitting || !selectedDate || (isCardPayment && !paymentReady)}
+        disabled={!canSubmit}
+        onClick={() => handleSubmit()}
       >
         {submitting ? 'Processing…' : 'Submit Reservation'}
       </button>
