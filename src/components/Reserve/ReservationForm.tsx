@@ -29,7 +29,7 @@ const ELEMENTS_OPTIONS = {
   mode: 'payment' as const,
   amount: 50000,
   currency: 'usd',
-  payment_method_types: ['card', 'link'] as const,
+  payment_method_types: ['card', 'link'] as string[],
 };
 
 interface ReservationFormProps {
