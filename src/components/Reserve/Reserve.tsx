@@ -8,8 +8,11 @@ import { ErrorState } from './ErrorState';
 import './Reserve.css';
 
 const stripePromise: Promise<Stripe | null> = fetch('/api/config')
-  .then(r => r.json())
-  .then(data => loadStripe(data.stripePublishableKey))
+  .then(r => {
+    if (!r.ok) throw new Error('config fetch failed');
+    return r.json();
+  })
+  .then(data => data.stripePublishableKey ? loadStripe(data.stripePublishableKey) : null)
   .catch(() => null);
 
 export function ReserveSection() {
