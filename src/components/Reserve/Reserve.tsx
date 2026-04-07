@@ -1,45 +1,97 @@
+import { useState, useEffect } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Calendar } from './Calendar';
+import { ReservationForm } from './ReservationForm';
+import { SuccessState } from './SuccessState';
+import { ErrorState } from './ErrorState';
 import './Reserve.css';
 
-const RESERVE_CARDS = [
-  {
-    n: '01',
-    title: 'Check the Calendar',
-    desc: 'Browse our availability calendar to find a date that works for your event.',
-  },
-  {
-    n: '02',
-    title: 'Review Guidelines',
-    desc: 'Read through our rental guidelines so there are no surprises on your big day.',
-  },
-  {
-    n: '03',
-    title: 'Submit a Request',
-    desc: 'Fill out the reservation request form with your event details and contact info.',
-  },
-  {
-    n: '04',
-    title: 'Confirm & Pay',
-    desc: 'Receive your confirmation and send your $500 deposit to lock in your date.',
-  },
-];
+const stripePromise = loadStripe(
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
+);
 
-export function ReserveSection() { 
+export function ReserveSection() {
+  const [selectedDate, setSelectedDate] = useState('');
+  const [reservedDates, setReservedDates] = useState<Set<string>>(new Set());
+  const [result, setResult] = useState<
+    | null
+    | { type: 'success'; firstName: string; email: string; date: string; paymentType: 'deposit' | 'full' | 'check' }
+    | { type: 'error'; message: string }
+  >(null);
+
+  useEffect(() => {
+    fetch('/api/reservations/dates')
+      .then(r => r.json())
+      .then(data => setReservedDates(new Set(data.dates || [])))
+      .catch(() => {});
+  }, []);
+
+  const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val && !reservedDates.has(val)) {
+      setSelectedDate(val);
+    }
+  };
+
+  if (result?.type === 'success') {
+    return (
+      <section id="reserve" className="section section-cream">
+        <div className="container container-narrow">
+          <SuccessState
+            firstName={result.firstName}
+            email={result.email}
+            date={result.date}
+            paymentType={result.paymentType}
+          />
+        </div>
+      </section>
+    );
+  }
+
+  if (result?.type === 'error') {
+    return (
+      <section id="reserve" className="section section-cream">
+        <div className="container container-narrow">
+          <ErrorState
+            message={result.message}
+            onRetry={() => setResult(null)}
+          />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="reserve" className="section section-cream">
       <div className="container">
-        <h2>How to Reserve</h2>
-        <p className="section-sub">Booking is straightforward. Here's how it works.</p>
-        <div className="steps">
-          {RESERVE_CARDS.map(({ n, title, desc }) => (
-            <div key={n} className="step">
-              <div className="step-number">{n}</div>
-              <h3>{title}</h3>
-              <p>{desc}</p>
-            </div>
-          ))}
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <a href="/reserve" className="btn btn-green">Start Your Reservation</a>
+        <h2>Reserve the Field</h2>
+        <p className="section-sub">Select your date and fill out the form below to book Martin-Bishop Field.</p>
+
+        <div className="reserve-layout">
+          <div className="reserve-left">
+            <label className="form-field date-input-field">
+              <span className="form-label">Event date</span>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={handleDateInput}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </label>
+            <Calendar
+              reservedDates={reservedDates}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+            />
+          </div>
+          <div className="reserve-right">
+            <ReservationForm
+              selectedDate={selectedDate}
+              stripePromise={stripePromise}
+              onSuccess={(data) => setResult({ type: 'success', ...data })}
+              onError={(message) => setResult({ type: 'error', message })}
+            />
+          </div>
         </div>
       </div>
     </section>

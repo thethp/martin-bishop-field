@@ -25,7 +25,7 @@ export function Header() {
         <a href="#amenities">Amenities</a>
         <a href="#gallery">Gallery</a>
         <a href="#faq">FAQ</a>
-        <a href="/reserve" className="nav-cta">Reserve</a>
+        <a href="#reserve" className="nav-cta">Reserve</a>
       </nav>
     </header>
   );
@@ -60,7 +60,7 @@ export function Footer() {
           <a href="#amenities">Amenities</a>
           <a href="#gallery">Gallery</a>
           <a href="#faq">FAQ</a>
-          <a href="/reserve">Reserve the Field</a>
+          <a href="#reserve">Reserve the Field</a>
         </div>
       </div>
       <div className="footer-bottom">

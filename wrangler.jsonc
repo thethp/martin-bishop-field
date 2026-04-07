@@ -1,0 +1,28 @@
+{
+  "name": "martin-bishop-field",
+  "compatibility_date": "2026-04-01",
+  "main": "api/index.ts",
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mbf-reservations",
+      "database_id": "local"
+    }
+  ],
+  "vars": {
+    "SITE_URL": "https://martin-bishopfield.com"
+  },
+  // Secrets (set via `wrangler secret put`):
+  // STRIPE_SECRET_KEY
+  // STRIPE_WEBHOOK_SECRET
+  // STRIPE_PUBLISHABLE_KEY
+  // RESEND_API_KEY
+  // JWT_SECRET
+  "triggers": {
+    "crons": ["0 9 * * *"]
+  }
+}

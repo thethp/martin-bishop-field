@@ -21,3 +21,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets
+.env
+.dev.vars
+
+# Cloudflare local state
+.wrangler/

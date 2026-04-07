@@ -1,3 +1,4 @@
+import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import { Header, Footer } from './components/Navbars/Navbars';
 import { FaqsSection } from './components/Faqs/Faqs';
@@ -8,31 +9,34 @@ import { DetailsSection } from './components/Details/Details';
 import { EventsSection } from './components/Events/Events';
 import { AmenitiesSection } from './components/Amenities/Amenities';
 import { CTASection } from './components/CTA/CTA';
+import { AdminPage } from './pages/AdminPage/AdminPage';
+
+function HomePage() {
+  return (
+    <>
+      <Hero />
+      <EventsSection />
+      <AmenitiesSection />
+      <ReserveSection />
+      <DetailsSection />
+      <GallerySection />
+      <FaqsSection />
+      <CTASection />
+    </>
+  );
+}
 
 function App() {
   return (
     <>
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <Header />
-      
       <main id="main-content">
-        <Hero />
-
-        <EventsSection />
-
-        <AmenitiesSection />
-
-        <ReserveSection />
-
-        <DetailsSection />
-
-        <GallerySection />
-
-        <FaqsSection />
-
-        <CTASection />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
       </main>
-
       <Footer />
     </>
   );

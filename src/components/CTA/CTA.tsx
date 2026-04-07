@@ -9,7 +9,7 @@ export function CTASection() {
           Check availability and reserve Martin-Bishop Field for your next gathering in Guilford, CT.
         </p>
         <div className="cta-actions">
-          <a href="/reserve" className="btn btn-primary btn-large">Reserve the Field</a>
+          <a href="#reserve" className="btn btn-primary btn-large">Reserve the Field</a>
         </div>
       </div>
     </section>
