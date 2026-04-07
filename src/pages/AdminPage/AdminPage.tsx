@@ -315,6 +315,166 @@ function Dashboard({ token, onLogout }: { token: string; onLogout: () => void })
           onAdded={fetchReservations}
         />
       )}
+
+      <UserManagement token={token} onLogout={onLogout} />
+    </div>
+  );
+}
+
+function UserManagement({ token, onLogout }: { token: string; onLogout: () => void }) {
+  const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [addError, setAddError] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editPassword, setEditPassword] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 401) { onLogout(); return; }
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch {
+      // network error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUsername.trim() || !newPassword.trim()) return;
+    setAdding(true);
+    setAddError('');
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ username: newUsername, password: newPassword }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setAddError(data.error || 'Failed to add user');
+        return;
+      }
+      setNewUsername('');
+      setNewPassword('');
+      fetchUsers();
+    } catch {
+      setAddError('Network error');
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const handleDelete = async (id: number, username: string) => {
+    if (!confirm(`Delete user "${username}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete user');
+      } else {
+        fetchUsers();
+      }
+    } catch {
+      alert('Network error');
+    }
+  };
+
+  const handleEditPassword = async (id: number) => {
+    if (!editPassword.trim()) return;
+    setEditLoading(true);
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ password: editPassword }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Failed to update password');
+      } else {
+        setEditingId(null);
+        setEditPassword('');
+      }
+    } catch {
+      alert('Network error');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  return (
+    <div className="user-management">
+      <h2>Users</h2>
+
+      {loading ? (
+        <p className="admin-loading">Loading…</p>
+      ) : (
+        <div className="table-wrapper">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map(u => (
+                <tr key={u.id}>
+                  <td>{u.username}</td>
+                  <td className="actions-cell">
+                    {editingId === u.id ? (
+                      <>
+                        <input
+                          type="password"
+                          placeholder="New password"
+                          value={editPassword}
+                          onChange={e => setEditPassword(e.target.value)}
+                          className="inline-input"
+                        />
+                        <button className="btn-sm" disabled={editLoading} onClick={() => handleEditPassword(u.id)}>
+                          {editLoading ? '…' : 'Save'}
+                        </button>
+                        <button className="btn-sm" onClick={() => { setEditingId(null); setEditPassword(''); }}>
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button className="btn-sm" onClick={() => setEditingId(u.id)}>Change Password</button>
+                        <button className="btn-sm btn-sm-danger" onClick={() => handleDelete(u.id, u.username)}>Delete</button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <form className="add-user-form" onSubmit={handleAdd}>
+        {addError && <p className="admin-error">{addError}</p>}
+        <input type="text" placeholder="Username" value={newUsername} onChange={e => setNewUsername(e.target.value)} />
+        <input type="password" placeholder="Password" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+        <button type="submit" className="btn btn-green" disabled={adding}>
+          {adding ? 'Adding…' : 'Add User'}
+        </button>
+      </form>
     </div>
   );
 }

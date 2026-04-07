@@ -7,6 +7,7 @@ import {
   DEPOSIT_AMOUNT,
   requireAuth,
   verifyPassword,
+  hashPassword,
   createJWT,
   sendConfirmationEmail,
   sendCancellationEmail,
@@ -26,7 +27,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     return new Response(null, {
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
     });
@@ -56,6 +57,21 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     }
     if (path === '/api/admin/add-reservation' && method === 'POST') {
       return addReservation(request, env);
+    }
+
+    // User management
+    if (path === '/api/admin/users' && method === 'GET') {
+      return listUsers(request, env);
+    }
+    if (path === '/api/admin/users' && method === 'POST') {
+      return createUser(request, env);
+    }
+    const userMatch = path.match(/^\/api\/admin\/users\/(\d+)$/);
+    if (userMatch && method === 'DELETE') {
+      return deleteUser(request, env, userMatch[1]);
+    }
+    if (userMatch && method === 'PUT') {
+      return updateUserPassword(request, env, userMatch[1]);
     }
 
     // /api/reservations/:id/:action
@@ -335,6 +351,56 @@ async function markPaid(request: Request, env: Env, id: string) {
   await env.DB.prepare(
     `UPDATE reservations SET paid_in_full = 1, amount_paid = amount_total, updated_at = datetime('now') WHERE id = ?`
   ).bind(id).run();
+
+  return jsonResponse({ success: true });
+}
+
+// --- User management ---
+
+async function listUsers(request: Request, env: Env) {
+  const auth = await requireAuth(request, env);
+  if (auth instanceof Response) return auth;
+
+  const { results } = await env.DB.prepare(`SELECT id, username FROM admins ORDER BY id`).all<{ id: number; username: string }>();
+  return jsonResponse({ users: results });
+}
+
+async function createUser(request: Request, env: Env) {
+  const auth = await requireAuth(request, env);
+  if (auth instanceof Response) return auth;
+
+  const { username, password } = await request.json() as { username: string; password: string };
+  if (!username?.trim() || !password?.trim()) return errorResponse('Username and password required');
+
+  const existing = await env.DB.prepare(`SELECT id FROM admins WHERE username = ?`).bind(username).first();
+  if (existing) return errorResponse('Username already exists');
+
+  const hash = await hashPassword(password);
+  await env.DB.prepare(`INSERT INTO admins (username, password_hash) VALUES (?, ?)`).bind(username, hash).run();
+
+  return jsonResponse({ success: true });
+}
+
+async function deleteUser(request: Request, env: Env, id: string) {
+  const auth = await requireAuth(request, env);
+  if (auth instanceof Response) return auth;
+
+  const count = await env.DB.prepare(`SELECT COUNT(*) as cnt FROM admins`).first<{ cnt: number }>();
+  if (count && count.cnt <= 1) return errorResponse('Cannot delete the last admin user');
+
+  await env.DB.prepare(`DELETE FROM admins WHERE id = ?`).bind(id).run();
+  return jsonResponse({ success: true });
+}
+
+async function updateUserPassword(request: Request, env: Env, id: string) {
+  const auth = await requireAuth(request, env);
+  if (auth instanceof Response) return auth;
+
+  const { password } = await request.json() as { password: string };
+  if (!password?.trim()) return errorResponse('Password required');
+
+  const hash = await hashPassword(password);
+  await env.DB.prepare(`UPDATE admins SET password_hash = ? WHERE id = ?`).bind(hash, id).run();
 
   return jsonResponse({ success: true });
 }
