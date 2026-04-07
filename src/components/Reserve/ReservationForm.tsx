@@ -38,7 +38,6 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
   const { confirmPayment } = usePayment();
 
   const rate = selectedDate ? getRate(selectedDate) : 0;
-  const payAmount = form.paymentType === 'full' ? rate : DEPOSIT_AMOUNT;
 
   const formatPhone = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 10);
