@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import type { Stripe } from '@stripe/stripe-js';
 import { Calendar } from './Calendar';
@@ -93,8 +93,8 @@ export function ReserveSection() {
             <ReservationForm
               selectedDate={selectedDate}
               stripePromise={stripePromise}
-              onSuccess={useCallback((data: { firstName: string; email: string; date: string; paymentType: 'deposit' | 'full' | 'check' }) => setResult({ type: 'success', ...data }), [])}
-              onError={useCallback((message: string) => setResult({ type: 'error', message }), [])}
+              onSuccess={(data) => setResult({ type: 'success', ...data })}
+              onError={(message) => setResult({ type: 'error', message })}
             />
           </div>
         </div>
