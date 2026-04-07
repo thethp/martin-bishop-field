@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import type { Stripe } from '@stripe/stripe-js';
-import { PaymentSection, usePayment } from './PaymentSection';
+import { PaymentSection } from './PaymentSection';
+import type { PaymentHandle } from './PaymentSection';
 import { getRate, formatCents, DEPOSIT_AMOUNT } from '../../shared/pricing';
 import './ReservationForm.css';
 
@@ -37,14 +38,13 @@ function formatPhone(value: string) {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormProps, 'stripePromise'>) {
+export function ReservationForm({ selectedDate, stripePromise, onSuccess, onError }: ReservationFormProps) {
   const [paymentType, setPaymentType] = useState<'deposit' | 'full' | 'check'>('deposit');
   const [paymentReady, setPaymentReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const clientSecretRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
-
-  const { confirmPayment } = usePayment();
+  const paymentRef = useRef<PaymentHandle>(null);
 
   const rate = selectedDate ? getRate(selectedDate) : 0;
   const isCardPayment = paymentType !== 'check';
@@ -107,7 +107,7 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
           clientSecretRef.current = secret;
         }
 
-        await confirmPayment(secret!);
+        await paymentRef.current!.confirmPayment(secret!);
         onSuccess({ firstName, email, date: selectedDate, paymentType });
       }
     } catch (err: unknown) {
@@ -189,7 +189,9 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
           )}
 
           {isCardPayment && (
-            <PaymentSection onReady={setPaymentReady} />
+            <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
+              <PaymentSection ref={paymentRef} onReady={setPaymentReady} />
+            </Elements>
           )}
 
           <p className="balance-note">
@@ -206,13 +208,5 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
         {submitting ? 'Processing…' : 'Submit Reservation'}
       </button>
     </form>
-  );
-}
-
-export function ReservationForm({ selectedDate, stripePromise, onSuccess, onError }: ReservationFormProps) {
-  return (
-    <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
-      <FormInner selectedDate={selectedDate} onSuccess={onSuccess} onError={onError} />
-    </Elements>
   );
 }
