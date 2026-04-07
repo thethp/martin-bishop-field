@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "mbf-reservations",
-      "database_id": "local"
+      "database_id": "b8a710f9-c12f-44fc-ab7d-989608c9f6f0"
     }
   ],
   "vars": {
