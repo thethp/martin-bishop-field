@@ -1,18 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import type { Stripe } from '@stripe/stripe-js';
 import { PaymentSection, usePayment } from './PaymentSection';
 import { getRate, formatCents, DEPOSIT_AMOUNT } from '../../shared/pricing';
 import './ReservationForm.css';
-
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  notes: string;
-  paymentType: 'deposit' | 'full' | 'check';
-}
 
 const ELEMENTS_OPTIONS = {
   appearance: {
@@ -39,85 +30,72 @@ interface ReservationFormProps {
   onError: (message: string) => void;
 }
 
+function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
 function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormProps, 'stripePromise'>) {
-  const [form, setForm] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    notes: '',
-    paymentType: 'deposit',
-  });
+  const [paymentType, setPaymentType] = useState<'deposit' | 'full' | 'check'>('deposit');
   const [paymentReady, setPaymentReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [reservationId, setReservationId] = useState<number | null>(null);
+  const clientSecretRef = useRef<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const { confirmPayment } = usePayment();
 
   const rate = selectedDate ? getRate(selectedDate) : 0;
+  const isCardPayment = paymentType !== 'check';
 
-  const formatPhone = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 10);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  };
-
-  const set = (key: keyof FormData, value: string) =>
-    setForm(f => ({ ...f, [key]: key === 'phone' ? formatPhone(value) : value }));
-
-  const isCardPayment = form.paymentType !== 'check';
-  const formValid =
-    form.firstName.trim() &&
-    form.lastName.trim() &&
-    form.email.trim() &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) &&
-    form.phone.trim() &&
-    selectedDate &&
-    (!isCardPayment || paymentReady);
+  const handlePhoneInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.value = formatPhone(e.target.value);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formValid || submitting) return;
+    if (submitting || !formRef.current) return;
+
+    const fd = new FormData(formRef.current);
+    const firstName = (fd.get('firstName') as string || '').trim();
+    const lastName = (fd.get('lastName') as string || '').trim();
+    const email = (fd.get('email') as string || '').trim();
+    const phone = (fd.get('phone') as string || '').trim();
+    const notes = (fd.get('notes') as string || '').trim() || null;
+
+    if (!firstName || !lastName || !email || !phone || !selectedDate) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+    if (isCardPayment && !paymentReady) return;
+
     setSubmitting(true);
 
     try {
-      if (form.paymentType === 'check') {
+      if (paymentType === 'check') {
         const res = await fetch('/api/reservations/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            first_name: form.firstName,
-            last_name: form.lastName,
-            email: form.email,
-            phone: form.phone,
-            event_date: selectedDate,
-            payment_type: 'check',
-            notes: form.notes || null,
+            first_name: firstName, last_name: lastName,
+            email, phone, event_date: selectedDate,
+            payment_type: 'check', notes,
           }),
         });
         if (!res.ok) {
           const data = await res.json();
           throw new Error(data.error || 'Failed to create reservation');
         }
-        onSuccess({ firstName: form.firstName, email: form.email, date: selectedDate, paymentType: 'check' });
+        onSuccess({ firstName, email, date: selectedDate, paymentType: 'check' });
       } else {
-        // Create payment intent if we don't have one yet
-        let secret = clientSecret;
-        let resId = reservationId;
+        let secret = clientSecretRef.current;
         if (!secret) {
           const res = await fetch('/api/reservations/create-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              first_name: form.firstName,
-              last_name: form.lastName,
-              email: form.email,
-              phone: form.phone,
-              event_date: selectedDate,
-              payment_type: form.paymentType,
-              notes: form.notes || null,
+              first_name: firstName, last_name: lastName,
+              email, phone, event_date: selectedDate,
+              payment_type: paymentType, notes,
             }),
           });
           if (!res.ok) {
@@ -126,13 +104,11 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
           }
           const data = await res.json();
           secret = data.clientSecret;
-          resId = data.reservationId;
-          setClientSecret(secret);
-          setReservationId(resId);
+          clientSecretRef.current = secret;
         }
 
         await confirmPayment(secret!);
-        onSuccess({ firstName: form.firstName, email: form.email, date: selectedDate, paymentType: form.paymentType });
+        onSuccess({ firstName, email, date: selectedDate, paymentType });
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An unexpected error occurred';
@@ -143,59 +119,31 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
   };
 
   return (
-    <form className="reservation-form" onSubmit={handleSubmit} noValidate>
+    <form className="reservation-form" onSubmit={handleSubmit} ref={formRef} noValidate>
       <div className="form-row">
         <label className="form-field">
           <span className="form-label">First name</span>
-          <input
-            type="text"
-            value={form.firstName}
-            onChange={e => set('firstName', e.target.value)}
-            required
-            autoComplete="given-name"
-          />
+          <input type="text" name="firstName" required autoComplete="given-name" />
         </label>
         <label className="form-field">
           <span className="form-label">Last name</span>
-          <input
-            type="text"
-            value={form.lastName}
-            onChange={e => set('lastName', e.target.value)}
-            required
-            autoComplete="family-name"
-          />
+          <input type="text" name="lastName" required autoComplete="family-name" />
         </label>
       </div>
 
       <label className="form-field">
         <span className="form-label">E-mail</span>
-        <input
-          type="email"
-          value={form.email}
-          onChange={e => set('email', e.target.value)}
-          required
-          autoComplete="email"
-        />
+        <input type="email" name="email" required autoComplete="email" />
       </label>
 
       <label className="form-field">
         <span className="form-label">Phone number</span>
-        <input
-          type="tel"
-          value={form.phone}
-          onChange={e => set('phone', e.target.value)}
-          required
-          autoComplete="tel"
-        />
+        <input type="tel" name="phone" required autoComplete="tel" onChange={handlePhoneInput} />
       </label>
 
       <label className="form-field">
         <span className="form-label">Notes <span className="form-optional">(optional)</span></span>
-        <textarea
-          value={form.notes}
-          onChange={e => set('notes', e.target.value)}
-          rows={3}
-        />
+        <textarea name="notes" rows={3} />
       </label>
 
       {selectedDate && (
@@ -207,8 +155,8 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
                 type="radio"
                 name="paymentType"
                 value="deposit"
-                checked={form.paymentType === 'deposit'}
-                onChange={() => set('paymentType', 'deposit')}
+                checked={paymentType === 'deposit'}
+                onChange={() => setPaymentType('deposit')}
               />
               <span>Pay deposit ({formatCents(DEPOSIT_AMOUNT)})</span>
             </label>
@@ -217,8 +165,8 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
                 type="radio"
                 name="paymentType"
                 value="full"
-                checked={form.paymentType === 'full'}
-                onChange={() => set('paymentType', 'full')}
+                checked={paymentType === 'full'}
+                onChange={() => setPaymentType('full')}
               />
               <span>Pay in full ({formatCents(rate)})</span>
             </label>
@@ -227,14 +175,14 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
                 type="radio"
                 name="paymentType"
                 value="check"
-                checked={form.paymentType === 'check'}
-                onChange={() => set('paymentType', 'check')}
+                checked={paymentType === 'check'}
+                onChange={() => setPaymentType('check')}
               />
               <span>Pay by check</span>
             </label>
           </fieldset>
 
-          {form.paymentType === 'check' && (
+          {paymentType === 'check' && (
             <div className="check-info-box">
               A $500 deposit check is due within 5 business days of your reservation request. Details on where to send it will arrive via email.
             </div>
@@ -253,7 +201,7 @@ function FormInner({ selectedDate, onSuccess, onError }: Omit<ReservationFormPro
       <button
         type="submit"
         className="btn btn-primary btn-large reserve-submit"
-        disabled={!formValid || submitting}
+        disabled={submitting || !selectedDate || (isCardPayment && !paymentReady)}
       >
         {submitting ? 'Processing…' : 'Submit Reservation'}
       </button>
