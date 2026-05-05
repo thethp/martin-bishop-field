@@ -47,6 +47,9 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     if (path === '/api/reservations/create' && method === 'POST') {
       return createCheckReservation(request, env);
     }
+    if (path === '/api/reservations/release' && method === 'POST') {
+      return releasePending(request, env);
+    }
     if (path === '/api/admin/login' && method === 'POST') {
       return adminLogin(request, env);
     }
@@ -184,6 +187,17 @@ async function createCheckReservation(request: Request, env: Env) {
   });
 
   return jsonResponse({ reservationId: result.meta.last_row_id });
+}
+
+async function releasePending(request: Request, env: Env) {
+  const { stripe_payment_intent_id } = await request.json() as { stripe_payment_intent_id: string };
+  if (!stripe_payment_intent_id) return errorResponse('Missing payment intent ID');
+
+  await env.DB.prepare(
+    `UPDATE reservations SET status = 'cancelled' WHERE stripe_payment_intent_id = ? AND status = 'pending'`
+  ).bind(stripe_payment_intent_id).run();
+
+  return jsonResponse({ success: true });
 }
 
 async function adminLogin(request: Request, env: Env) {

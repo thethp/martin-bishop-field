@@ -53,6 +53,7 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
   const [paymentReady, setPaymentReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const clientSecretRef = useRef<string | null>(null);
+  const paymentIntentIdRef = useRef<string | null>(null);
   const paymentRef = useRef<PaymentHandle>(null);
 
   const rate = selectedDate ? getRate(selectedDate) : 0;
@@ -68,7 +69,10 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
 
   const set = (key: keyof FormData, value: string) => {
     setForm(f => ({ ...f, [key]: key === 'phone' ? formatPhone(value) : value }));
-    if (key === 'paymentType') clientSecretRef.current = null;
+    if (key === 'paymentType') {
+      clientSecretRef.current = null;
+      paymentIntentIdRef.current = null;
+    }
   };
 
   const formValid =
@@ -129,13 +133,22 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
           const data = await res.json();
           secret = data.clientSecret;
           clientSecretRef.current = secret;
+          paymentIntentIdRef.current = secret!.split('_secret_')[0];
         }
 
         await paymentRef.current!.confirmPayment(secret!);
         onSuccess({ firstName: form.firstName, email: form.email, date: selectedDate, paymentType: form.paymentType });
       }
     } catch (err: unknown) {
+      if (paymentIntentIdRef.current) {
+        fetch('/api/reservations/release', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stripe_payment_intent_id: paymentIntentIdRef.current }),
+        }).catch(() => {});
+      }
       clientSecretRef.current = null;
+      paymentIntentIdRef.current = null;
       const message = err instanceof Error ? err.message : 'An unexpected error occurred';
       onError(message);
     } finally {
