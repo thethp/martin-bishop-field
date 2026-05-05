@@ -102,7 +102,9 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
 async function getDates(env: Env) {
   const { results } = await env.DB.prepare(
-    `SELECT event_date FROM reservations WHERE status = 'active' AND event_date >= date('now')`
+    `SELECT event_date FROM reservations
+     WHERE event_date >= date('now')
+       AND (status = 'active' OR (status = 'pending' AND created_at >= datetime('now', '-1 hour')))`
   ).all<{ event_date: string }>();
   return jsonResponse({ dates: results.map(r => r.event_date) });
 }
@@ -118,7 +120,7 @@ async function createIntent(request: Request, env: Env) {
   }
 
   const existing = await env.DB.prepare(
-    `SELECT id FROM reservations WHERE event_date = ? AND status = 'active'`
+    `SELECT id FROM reservations WHERE event_date = ? AND (status = 'active' OR (status = 'pending' AND created_at >= datetime('now', '-1 hour')))`
   ).bind(body.event_date).first();
   if (existing) return errorResponse('This date is already reserved');
 
@@ -136,11 +138,13 @@ async function createIntent(request: Request, env: Env) {
       name: `${body.first_name} ${body.last_name}`,
     },
     receipt_email: body.email,
+  }, {
+    idempotencyKey: `reserve:${body.event_date}:${body.email}:${body.payment_type}`,
   });
 
   const result = await env.DB.prepare(
-    `INSERT INTO reservations (first_name, last_name, email, phone, event_date, payment_type, notes, amount_total, amount_paid, stripe_payment_intent_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`
+    `INSERT INTO reservations (first_name, last_name, email, phone, event_date, payment_type, notes, amount_total, amount_paid, stripe_payment_intent_id, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 'pending')`
   ).bind(
     body.first_name, body.last_name, body.email, body.phone,
     body.event_date, body.payment_type, body.notes,
@@ -161,7 +165,7 @@ async function createCheckReservation(request: Request, env: Env) {
   }
 
   const existing = await env.DB.prepare(
-    `SELECT id FROM reservations WHERE event_date = ? AND status = 'active'`
+    `SELECT id FROM reservations WHERE event_date = ? AND (status = 'active' OR (status = 'pending' AND created_at >= datetime('now', '-1 hour')))`
   ).bind(body.event_date).first();
   if (existing) return errorResponse('This date is already reserved');
 
@@ -212,12 +216,12 @@ async function stripeWebhook(request: Request, env: Env) {
       `SELECT * FROM reservations WHERE stripe_payment_intent_id = ?`
     ).bind(pi.id).first<Record<string, unknown>>();
 
-    if (reservation) {
+    if (reservation && reservation.status === 'pending') {
       const amountPaid = pi.amount;
       const paidInFull = amountPaid >= (reservation.amount_total as number) ? 1 : 0;
 
       await env.DB.prepare(
-        `UPDATE reservations SET amount_paid = ?, paid_in_full = ?, updated_at = datetime('now') WHERE id = ?`
+        `UPDATE reservations SET amount_paid = ?, paid_in_full = ?, status = 'active', updated_at = datetime('now') WHERE id = ?`
       ).bind(amountPaid, paidInFull, reservation.id).run();
 
       await sendConfirmationEmail(env, {
@@ -231,6 +235,8 @@ async function stripeWebhook(request: Request, env: Env) {
         amount_total: reservation.amount_total as number,
         amount_paid: amountPaid,
       });
+    } else if (!reservation) {
+      console.error(`Webhook: no reservation found for PaymentIntent ${pi.id}`);
     }
   }
 
@@ -260,6 +266,15 @@ async function addReservation(request: Request, env: Env) {
   if (auth instanceof Response) return auth;
 
   const body = await request.json() as Record<string, unknown>;
+
+  if (!body.first_name || !body.last_name || !body.email || !body.event_date) {
+    return errorResponse('First name, last name, email, and event date are required');
+  }
+
+  const existing = await env.DB.prepare(
+    `SELECT id FROM reservations WHERE event_date = ? AND (status = 'active' OR (status = 'pending' AND created_at >= datetime('now', '-1 hour')))`
+  ).bind(body.event_date).first();
+  if (existing) return errorResponse('This date is already reserved');
 
   const result = await env.DB.prepare(
     `INSERT INTO reservations (first_name, last_name, email, phone, event_date, payment_type, notes, paid_in_full, amount_total, amount_paid)
@@ -437,6 +452,10 @@ async function verifyStripeSignature(payload: string, sigHeader: string, secret:
 // --- Scheduled handler ---
 
 async function handleScheduled(env: Env) {
+  await env.DB.prepare(
+    `UPDATE reservations SET status = 'cancelled' WHERE status = 'pending' AND created_at < datetime('now', '-1 hour')`
+  ).run();
+
   const invoiceDue = await env.DB.prepare(
     `SELECT * FROM reservations
      WHERE status = 'active' AND paid_in_full = 0 AND payment_type != 'check'
@@ -455,7 +474,6 @@ async function handleScheduled(env: Env) {
   ).all<Record<string, unknown>>();
 
   for (const r of concernDue.results) {
-    await sendInvoiceEmail(env, r as any);
     await sendConcernEmail(env, r as any);
     await env.DB.prepare(`UPDATE reservations SET concern_sent = 1, updated_at = datetime('now') WHERE id = ?`).bind(r.id).run();
   }

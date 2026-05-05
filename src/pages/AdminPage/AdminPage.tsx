@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './AdminPage.css';
 import type { Reservation } from '../../shared/types';
-import { formatCents, getRate } from '../../shared/pricing';
+import { formatCents, getRate, DEPOSIT_AMOUNT } from '../../shared/pricing';
 
 function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
   const [username, setUsername] = useState('');
@@ -200,7 +200,7 @@ function ReservationRow({ r, token, onRefresh }: { r: Reservation; token: string
               <button
                 className="btn-sm"
                 disabled={!!loading}
-                onClick={() => action('refund', `Refund ${formatCents(r.amount_total - 50000)} to ${r.first_name}?`)}
+                onClick={() => action('refund', `Refund ${formatCents(r.amount_paid - DEPOSIT_AMOUNT)} to ${r.first_name}?`)}
               >
                 {loading === 'refund' ? '…' : 'Refund'}
               </button>

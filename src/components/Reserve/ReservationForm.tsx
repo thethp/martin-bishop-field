@@ -6,22 +6,16 @@ import type { PaymentHandle } from './PaymentSection';
 import { getRate, formatCents, DEPOSIT_AMOUNT } from '../../shared/pricing';
 import './ReservationForm.css';
 
-const ELEMENTS_OPTIONS = {
-  appearance: {
-    theme: 'stripe' as const,
-    variables: {
-      colorPrimary: '#4F6F52',
-      colorBackground: '#ffffff',
-      colorText: '#1e2d1e',
-      colorDanger: '#7A2E2E',
-      fontFamily: 'Inter, sans-serif',
-      borderRadius: '6px',
-    },
+const ELEMENTS_APPEARANCE = {
+  theme: 'stripe' as const,
+  variables: {
+    colorPrimary: '#4F6F52',
+    colorBackground: '#ffffff',
+    colorText: '#1e2d1e',
+    colorDanger: '#7A2E2E',
+    fontFamily: 'Inter, sans-serif',
+    borderRadius: '6px',
   },
-  mode: 'payment' as const,
-  amount: 50000,
-  currency: 'usd',
-  payment_method_types: ['card', 'link'] as string[],
 };
 
 interface FormData {
@@ -63,9 +57,19 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
 
   const rate = selectedDate ? getRate(selectedDate) : 0;
   const isCardPayment = form.paymentType !== 'check';
+  const chargeAmount = form.paymentType === 'full' ? rate : DEPOSIT_AMOUNT;
+  const elementsOptions = {
+    appearance: ELEMENTS_APPEARANCE,
+    mode: 'payment' as const,
+    amount: chargeAmount || DEPOSIT_AMOUNT,
+    currency: 'usd',
+    payment_method_types: ['card', 'link'] as string[],
+  };
 
-  const set = (key: keyof FormData, value: string) =>
+  const set = (key: keyof FormData, value: string) => {
     setForm(f => ({ ...f, [key]: key === 'phone' ? formatPhone(value) : value }));
+    if (key === 'paymentType') clientSecretRef.current = null;
+  };
 
   const formValid =
     form.firstName.trim() &&
@@ -131,6 +135,7 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
         onSuccess({ firstName: form.firstName, email: form.email, date: selectedDate, paymentType: form.paymentType });
       }
     } catch (err: unknown) {
+      clientSecretRef.current = null;
       const message = err instanceof Error ? err.message : 'An unexpected error occurred';
       onError(message);
     } finally {
@@ -237,7 +242,7 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
           )}
 
           {isCardPayment && (
-            <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
+            <Elements key={chargeAmount} stripe={stripePromise} options={elementsOptions}>
               <PaymentSection ref={paymentRef} onReady={setPaymentReady} />
             </Elements>
           )}

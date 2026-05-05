@@ -20,13 +20,10 @@ export function errorResponse(error: string, status = 400) {
   return jsonResponse({ error }, status);
 }
 
-export const DEPOSIT_AMOUNT = 50000;
+export { getRate, DEPOSIT_AMOUNT } from '../src/shared/pricing';
 
-export function getRate(dateStr: string): number {
-  const day = new Date(dateStr + 'T12:00:00').getDay();
-  if (day === 0 || day === 6) return 130000;
-  if (day === 5) return 85000;
-  return 55000;
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // JWT
@@ -135,11 +132,11 @@ export function sendConfirmationEmail(env: Env, r: {
       <p>A reservation has been made for Martin-Bishop Field.</p>
       <table style="border-collapse:collapse;margin:16px 0">
         <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Date</td><td>${date}</td></tr>
-        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Name</td><td>${r.first_name} ${r.last_name}</td></tr>
-        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Email</td><td>${r.email}</td></tr>
-        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Phone</td><td>${r.phone}</td></tr>
+        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Name</td><td>${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</td></tr>
+        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Email</td><td>${escapeHtml(r.email)}</td></tr>
+        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Phone</td><td>${escapeHtml(r.phone)}</td></tr>
         <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Payment</td><td>${paymentStatus}</td></tr>
-        ${r.notes ? `<tr><td style="padding:6px 16px 6px 0;font-weight:bold">Notes</td><td>${r.notes}</td></tr>` : ''}
+        ${r.notes ? `<tr><td style="padding:6px 16px 6px 0;font-weight:bold">Notes</td><td>${escapeHtml(r.notes)}</td></tr>` : ''}
       </table>
       ${checkInfo}
       <p style="color:#666;font-size:13px">The full balance is due within 30 days of the event.</p>`,
@@ -151,7 +148,7 @@ export function sendCancellationEmail(env: Env, r: { first_name: string; last_na
   return sendEmail(env, {
     to: [r.email, FIELD_EMAIL],
     subject: `Reservation Cancelled — Martin-Bishop Field — ${date}`,
-    html: `<h2>Reservation Cancelled</h2><p>The reservation for <strong>${date}</strong> for ${r.first_name} ${r.last_name} has been cancelled.</p>${refundInfo ? `<p>${refundInfo}</p>` : ''}`,
+    html: `<h2>Reservation Cancelled</h2><p>The reservation for <strong>${date}</strong> for ${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)} has been cancelled.</p>${refundInfo ? `<p>${refundInfo}</p>` : ''}`,
   });
 }
 
@@ -163,7 +160,7 @@ export function sendInvoiceEmail(env: Env, r: { first_name: string; last_name: s
     cc: [FIELD_EMAIL],
     subject: `Balance Due — Martin-Bishop Field — ${date}`,
     html: `<h2>Balance Due — Martin-Bishop Field</h2>
-      <p>Hi ${r.first_name},</p>
+      <p>Hi ${escapeHtml(r.first_name)},</p>
       <p>This is a reminder that the remaining balance of <strong>$${balance}</strong> is due for your reservation on <strong>${date}</strong>.</p>
       <p>Please contact us at martinbishopfield@gmail.com to arrange payment.</p>
       <p>You may also pay by check:<br>Make payable to: Martin Bishop Field<br>Mail to: 225 State Street, Guilford, CT 06437</p>`,
@@ -180,9 +177,9 @@ export function sendConcernEmail(env: Env, r: { first_name: string; last_name: s
       <p>The following reservation is within 7 days and has not been paid in full:</p>
       <table style="border-collapse:collapse;margin:16px 0">
         <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Date</td><td>${date}</td></tr>
-        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Name</td><td>${r.first_name} ${r.last_name}</td></tr>
-        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Email</td><td>${r.email}</td></tr>
-        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Phone</td><td>${r.phone}</td></tr>
+        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Name</td><td>${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</td></tr>
+        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Email</td><td>${escapeHtml(r.email)}</td></tr>
+        <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Phone</td><td>${escapeHtml(r.phone)}</td></tr>
         <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Outstanding</td><td>$${balance}</td></tr>
       </table>`,
   });
