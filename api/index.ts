@@ -194,7 +194,7 @@ async function releasePending(request: Request, env: Env) {
   if (!stripe_payment_intent_id) return errorResponse('Missing payment intent ID');
 
   await env.DB.prepare(
-    `UPDATE reservations SET status = 'cancelled' WHERE stripe_payment_intent_id = ? AND status = 'pending'`
+    `DELETE FROM reservations WHERE stripe_payment_intent_id = ? AND status = 'pending'`
   ).bind(stripe_payment_intent_id).run();
 
   return jsonResponse({ success: true });
@@ -226,9 +226,11 @@ async function stripeWebhook(request: Request, env: Env) {
 
   if (event.type === 'payment_intent.succeeded') {
     const pi = event.data.object as Stripe.PaymentIntent;
+    console.log(`Webhook: payment_intent.succeeded for ${pi.id}`);
     const reservation = await env.DB.prepare(
       `SELECT * FROM reservations WHERE stripe_payment_intent_id = ?`
     ).bind(pi.id).first<Record<string, unknown>>();
+    console.log(`Webhook: reservation lookup result:`, reservation ? `id=${reservation.id}, status=${reservation.status}` : 'NOT FOUND');
 
     if (reservation && reservation.status === 'pending') {
       const amountPaid = pi.amount;
@@ -467,7 +469,7 @@ async function verifyStripeSignature(payload: string, sigHeader: string, secret:
 
 async function handleScheduled(env: Env) {
   await env.DB.prepare(
-    `UPDATE reservations SET status = 'cancelled' WHERE status = 'pending' AND created_at < datetime('now', '-1 hour')`
+    `DELETE FROM reservations WHERE status = 'pending' AND created_at < datetime('now', '-1 hour')`
   ).run();
 
   const invoiceDue = await env.DB.prepare(
