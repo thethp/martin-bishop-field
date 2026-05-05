@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import type { Stripe } from '@stripe/stripe-js';
 import { Calendar } from './Calendar';
@@ -23,6 +23,13 @@ export function ReserveSection() {
     | { type: 'success'; firstName: string; email: string; date: string; paymentType: 'deposit' | 'full' | 'check' }
     | { type: 'error'; message: string }
   >(null);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (result) {
+      sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [result]);
 
   useEffect(() => {
     fetch('/api/reservations/dates')
@@ -40,7 +47,7 @@ export function ReserveSection() {
 
   if (result?.type === 'success') {
     return (
-      <section id="reserve" className="section section-cream">
+      <section ref={sectionRef} id="reserve" className="section section-cream">
         <div className="container container-narrow">
           <SuccessState
             firstName={result.firstName}
@@ -55,7 +62,7 @@ export function ReserveSection() {
 
   if (result?.type === 'error') {
     return (
-      <section id="reserve" className="section section-cream">
+      <section ref={sectionRef} id="reserve" className="section section-cream">
         <div className="container container-narrow">
           <ErrorState
             message={result.message}
@@ -67,7 +74,7 @@ export function ReserveSection() {
   }
 
   return (
-    <section id="reserve" className="section section-cream">
+    <section ref={sectionRef} id="reserve" className="section section-cream">
       <div className="container">
         <h2>Reserve the Field</h2>
         <p className="section-sub">Select your date and fill out the form below to book Martin-Bishop Field.</p>
