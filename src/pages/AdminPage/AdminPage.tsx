@@ -187,6 +187,15 @@ function ReservationRow({ r, token, onRefresh }: { r: Reservation; token: string
       <td>{formatCents(r.amount_paid)} / {formatCents(r.amount_total)}</td>
       <td>{r.status}</td>
       <td className="actions-cell">
+        {r.status === 'cancelled' && (
+          <button
+            className="btn-sm btn-sm-danger"
+            disabled={!!loading}
+            onClick={() => action('delete', `Permanently delete reservation for ${r.first_name} ${r.last_name}?`)}
+          >
+            {loading === 'delete' ? '…' : 'Delete'}
+          </button>
+        )}
         {r.status === 'active' && (
           <>
             <button

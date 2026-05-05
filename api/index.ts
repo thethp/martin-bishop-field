@@ -81,7 +81,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     }
 
     // /api/reservations/:id/:action
-    const actionMatch = path.match(/^\/api\/reservations\/(\d+)\/(cancel|refund|invoice|mark-paid)$/);
+    const actionMatch = path.match(/^\/api\/reservations\/(\d+)\/(cancel|refund|invoice|mark-paid|delete)$/);
     if (actionMatch && method === 'POST') {
       const id = actionMatch[1];
       const action = actionMatch[2];
@@ -90,6 +90,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
         case 'refund': return refundReservation(request, env, id);
         case 'invoice': return sendInvoice(request, env, id);
         case 'mark-paid': return markPaid(request, env, id);
+        case 'delete': return deleteReservation(request, env, id);
       }
     }
 
@@ -373,6 +374,18 @@ async function sendInvoice(request: Request, env: Env, id: string) {
     amount_paid: reservation.amount_paid as number,
   });
 
+  return jsonResponse({ success: true });
+}
+
+async function deleteReservation(request: Request, env: Env, id: string) {
+  const auth = await requireAuth(request, env);
+  if (auth instanceof Response) return auth;
+
+  const reservation = await env.DB.prepare(`SELECT * FROM reservations WHERE id = ?`).bind(id).first<Record<string, unknown>>();
+  if (!reservation) return errorResponse('Reservation not found', 404);
+  if (reservation.status !== 'cancelled') return errorResponse('Can only delete cancelled reservations');
+
+  await env.DB.prepare(`DELETE FROM reservations WHERE id = ?`).bind(id).run();
   return jsonResponse({ success: true });
 }
 
