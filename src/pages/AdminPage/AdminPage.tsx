@@ -152,13 +152,14 @@ function AddReservationModal({ token, onClose, onAdded }: { token: string; onClo
 function ReservationRow({ r, token, onRefresh }: { r: Reservation; token: string; onRefresh: () => void }) {
   const [loading, setLoading] = useState('');
 
-  const action = async (endpoint: string, confirmMsg: string) => {
+  const action = async (endpoint: string, confirmMsg: string, body?: Record<string, unknown>) => {
     if (!confirm(confirmMsg)) return;
     setLoading(endpoint);
     try {
       const res = await fetch(`/api/reservations/${r.id}/${endpoint}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: body ? JSON.stringify(body) : undefined,
       });
       if (!res.ok) {
         const data = await res.json();
@@ -205,15 +206,25 @@ function ReservationRow({ r, token, onRefresh }: { r: Reservation; token: string
             >
               {loading === 'cancel' ? '…' : 'Cancel'}
             </button>
-            {r.paid_in_full ? (
+            {r.amount_paid > 0 && r.stripe_payment_intent_id && (
               <button
                 className="btn-sm"
                 disabled={!!loading}
-                onClick={() => action('refund', `Refund ${formatCents(r.amount_paid - DEPOSIT_AMOUNT)} to ${r.first_name}?`)}
+                onClick={() => {
+                  const maxDollars = (r.amount_paid / 100).toFixed(2);
+                  const input = prompt(`Refund amount for ${r.first_name} ${r.last_name} (max $${maxDollars}):`, maxDollars);
+                  if (input === null) return;
+                  const cents = Math.round(parseFloat(input) * 100);
+                  if (!cents || cents <= 0 || cents > r.amount_paid) {
+                    alert(`Amount must be between $0.01 and $${maxDollars}`);
+                    return;
+                  }
+                  action('refund', `Refund $${(cents / 100).toFixed(2)} to ${r.first_name}?`, { amount: cents });
+                }}
               >
                 {loading === 'refund' ? '…' : 'Refund'}
               </button>
-            ) : null}
+            )}
             {!r.paid_in_full && (
               <>
                 <button

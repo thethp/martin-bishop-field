@@ -329,13 +329,16 @@ async function refundReservation(request: Request, env: Env, id: string) {
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
 
+  const body = await request.json().catch(() => ({})) as { amount?: number };
   const reservation = await env.DB.prepare(`SELECT * FROM reservations WHERE id = ?`).bind(id).first<Record<string, unknown>>();
   if (!reservation) return errorResponse('Reservation not found', 404);
-  if (!reservation.paid_in_full) return errorResponse('Can only refund reservations paid in full');
   if (!reservation.stripe_payment_intent_id) return errorResponse('No payment to refund');
 
-  const refundAmount = (reservation.amount_total as number) - DEPOSIT_AMOUNT;
-  if (refundAmount <= 0) return errorResponse('Nothing to refund');
+  const amountPaid = reservation.amount_paid as number;
+  if (amountPaid <= 0) return errorResponse('Nothing to refund');
+
+  const refundAmount = body.amount || amountPaid;
+  if (refundAmount <= 0 || refundAmount > amountPaid) return errorResponse(`Refund must be between $0.01 and $${(amountPaid / 100).toFixed(2)}`);
 
   const stripe = new Stripe(env.STRIPE_SECRET_KEY);
   await stripe.refunds.create({
@@ -343,16 +346,20 @@ async function refundReservation(request: Request, env: Env, id: string) {
     amount: refundAmount,
   });
 
+  const newAmountPaid = amountPaid - refundAmount;
+  const paidInFull = newAmountPaid >= (reservation.amount_total as number) ? 1 : 0;
+  const newStatus = newAmountPaid <= 0 ? 'cancelled' : 'active';
+
   await env.DB.prepare(
-    `UPDATE reservations SET paid_in_full = 0, amount_paid = ?, status = 'cancelled', updated_at = datetime('now') WHERE id = ?`
-  ).bind(DEPOSIT_AMOUNT, id).run();
+    `UPDATE reservations SET paid_in_full = ?, amount_paid = ?, status = ?, updated_at = datetime('now') WHERE id = ?`
+  ).bind(paidInFull, newAmountPaid, newStatus, id).run();
 
   await sendCancellationEmail(env, {
     first_name: reservation.first_name as string,
     last_name: reservation.last_name as string,
     email: reservation.email as string,
     event_date: reservation.event_date as string,
-  }, `A refund of $${(refundAmount / 100).toFixed(2)} has been issued. The $500 deposit has been retained.`);
+  }, `A refund of $${(refundAmount / 100).toFixed(2)} has been issued.`);
 
   return jsonResponse({ success: true });
 }
