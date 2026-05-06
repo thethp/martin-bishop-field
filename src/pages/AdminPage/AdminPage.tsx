@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './AdminPage.css';
 import type { Reservation } from '../../shared/types';
-import { formatCents, getRate, DEPOSIT_AMOUNT } from '../../shared/pricing';
+import { formatCents, getRate } from '../../shared/pricing';
 
 function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
   const [username, setUsername] = useState('');
