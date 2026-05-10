@@ -15,7 +15,7 @@
     }
   ],
   "vars": {
-    "SITE_URL": "https://martin-bishop-field.todderick.workers.dev/"
+    "SITE_URL": "https://martin-bishopfield.com"
   },
   // Secrets (set via `wrangler secret put`):
   // STRIPE_SECRET_KEY
