@@ -236,23 +236,7 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
               />
               <span>Pay in full ({formatCents(rate)})</span>
             </label>
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="paymentType"
-                value="check"
-                checked={form.paymentType === 'check'}
-                onChange={() => set('paymentType', 'check')}
-              />
-              <span>Pay by check</span>
-            </label>
           </fieldset>
-
-          {form.paymentType === 'check' && (
-            <div className="check-info-box">
-              A $500 deposit check is due within 5 business days of your reservation request. Details on where to send it will arrive via email.
-            </div>
-          )}
 
           {isCardPayment && (
             <Elements key={chargeAmount} stripe={stripePromise} options={elementsOptions}>
