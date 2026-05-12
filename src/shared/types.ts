@@ -5,7 +5,7 @@ export interface Reservation {
   email: string;
   phone: string;
   event_date: string;
-  payment_type: 'deposit' | 'full' | 'check';
+  payment_type: 'deposit' | 'full';
   notes: string | null;
   paid_in_full: number;
   stripe_payment_intent_id: string | null;

@@ -2,12 +2,12 @@ import { useEffect, useState, useRef } from 'react';
 import './Gallery.css';
 
 const GALLERY_IMAGES = [
-  'https://martin-bishopfield.com/wp-content/uploads/2016/10/pa160517.jpeg',
-  'https://martin-bishopfield.com/wp-content/uploads/2016/10/pa160516.jpeg',
-  'https://martin-bishopfield.com/wp-content/uploads/2016/10/pa160515.jpeg',
-  'https://martin-bishopfield.com/wp-content/uploads/2016/10/pa160512.jpeg',
-  'https://martin-bishopfield.com/wp-content/uploads/2016/10/pa160507.jpeg',
-  'https://martin-bishopfield.com/wp-content/uploads/2016/10/pa160506.jpeg',
+  '/images/pa160517.jpeg',
+  '/images/pa160516.jpeg',
+  '/images/pa160515.jpeg',
+  '/images/pa160512.jpeg',
+  '/images/pa160507.jpeg',
+  '/images/pa160506.jpeg',
 ];
 
 function GalleryModal({ images, index, onClose }: { images: string[]; index: number; onClose: () => void }) {

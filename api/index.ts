@@ -44,9 +44,6 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     if (path === '/api/reservations/create-intent' && method === 'POST') {
       return createIntent(request, env);
     }
-    if (path === '/api/reservations/create' && method === 'POST') {
-      return createCheckReservation(request, env);
-    }
     if (path === '/api/reservations/release' && method === 'POST') {
       return releasePending(request, env);
     }
@@ -158,38 +155,6 @@ async function createIntent(request: Request, env: Env) {
   return jsonResponse({ clientSecret: paymentIntent.client_secret, reservationId: result.meta.last_row_id });
 }
 
-async function createCheckReservation(request: Request, env: Env) {
-  const body = await request.json() as {
-    first_name: string; last_name: string; email: string; phone: string;
-    event_date: string; notes: string | null;
-  };
-
-  if (!body.first_name || !body.last_name || !body.email || !body.phone || !body.event_date) {
-    return errorResponse('Missing required fields');
-  }
-
-  const existing = await env.DB.prepare(
-    `SELECT id FROM reservations WHERE event_date = ? AND (status = 'active' OR (status = 'pending' AND created_at >= datetime('now', '-1 hour')))`
-  ).bind(body.event_date).first();
-  if (existing) return errorResponse('This date is already reserved');
-
-  const totalAmount = getRate(body.event_date);
-
-  const result = await env.DB.prepare(
-    `INSERT INTO reservations (first_name, last_name, email, phone, event_date, payment_type, notes, amount_total, amount_paid)
-     VALUES (?, ?, ?, ?, ?, 'check', ?, ?, 0)`
-  ).bind(body.first_name, body.last_name, body.email, body.phone, body.event_date, body.notes, totalAmount).run();
-
-  await sendConfirmationEmail(env, {
-    ...body,
-    payment_type: 'check',
-    amount_total: totalAmount,
-    amount_paid: 0,
-  });
-
-  return jsonResponse({ reservationId: result.meta.last_row_id });
-}
-
 async function releasePending(request: Request, env: Env) {
   const { stripe_payment_intent_id } = await request.json() as { stripe_payment_intent_id: string };
   if (!stripe_payment_intent_id) return errorResponse('Missing payment intent ID');
@@ -298,7 +263,7 @@ async function addReservation(request: Request, env: Env) {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     body.first_name || '', body.last_name || '', body.email || '', body.phone || '',
-    body.event_date || '', body.payment_type || 'check', body.notes || null,
+    body.event_date || '', body.payment_type || 'deposit', body.notes || null,
     body.paid_in_full || 0, body.amount_total || 0, body.amount_paid || 0,
   ).run();
 
@@ -494,7 +459,7 @@ async function handleScheduled(env: Env) {
 
   const invoiceDue = await env.DB.prepare(
     `SELECT * FROM reservations
-     WHERE status = 'active' AND paid_in_full = 0 AND payment_type != 'check'
+     WHERE status = 'active' AND paid_in_full = 0
        AND invoice_sent = 0 AND event_date <= date('now', '+30 days') AND event_date >= date('now')`
   ).all<Record<string, unknown>>();
 

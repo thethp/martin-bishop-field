@@ -20,7 +20,7 @@ export function ReserveSection() {
   const [reservedDates, setReservedDates] = useState<Set<string>>(new Set());
   const [result, setResult] = useState<
     | null
-    | { type: 'success'; firstName: string; email: string; date: string; paymentType: 'deposit' | 'full' | 'check' }
+    | { type: 'success'; firstName: string; email: string; date: string; paymentType: 'deposit' | 'full' }
     | { type: 'error'; message: string }
   >(null);
   const sectionRef = useRef<HTMLElement>(null);

@@ -97,7 +97,7 @@ export async function requireAuth(request: Request, env: Env): Promise<Record<st
 const FIELD_EMAIL = 'martinbishopfield@gmail.com';
 
 export async function sendEmail(env: Env, opts: { to: string[]; cc?: string[]; subject: string; html: string }) {
-  await fetch('https://api.resend.com/emails', {
+  const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.RESEND_API_KEY}` },
     body: JSON.stringify({
@@ -108,6 +108,10 @@ export async function sendEmail(env: Env, opts: { to: string[]; cc?: string[]; s
       html: opts.html,
     }),
   });
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`Resend error (${res.status}):`, body);
+  }
 }
 
 export function sendConfirmationEmail(env: Env, r: {
@@ -116,13 +120,8 @@ export function sendConfirmationEmail(env: Env, r: {
   amount_total: number; amount_paid: number;
 }) {
   const date = new Date(r.event_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  const checkInfo = r.payment_type === 'check'
-    ? `<p><strong>Check Payment Instructions:</strong><br>Please mail a $500 deposit check within 5 business days.<br>Make payable to: Martin Bishop Field<br>Mail to: 225 State Street, Guilford, CT 06437</p>`
-    : '';
   const paymentStatus = r.amount_paid >= r.amount_total
     ? 'Paid in full'
-    : r.payment_type === 'check'
-    ? 'Check payment pending'
     : `$${(r.amount_paid / 100).toFixed(2)} paid — balance of $${((r.amount_total - r.amount_paid) / 100).toFixed(2)} due within 30 days of event`;
 
   return sendEmail(env, {
@@ -138,7 +137,6 @@ export function sendConfirmationEmail(env: Env, r: {
         <tr><td style="padding:6px 16px 6px 0;font-weight:bold">Payment</td><td>${paymentStatus}</td></tr>
         ${r.notes ? `<tr><td style="padding:6px 16px 6px 0;font-weight:bold">Notes</td><td>${escapeHtml(r.notes)}</td></tr>` : ''}
       </table>
-      ${checkInfo}
       <p style="color:#666;font-size:13px">The full balance is due within 30 days of the event.</p>`,
   });
 }
@@ -162,8 +160,7 @@ export function sendInvoiceEmail(env: Env, r: { first_name: string; last_name: s
     html: `<h2>Balance Due — Martin-Bishop Field</h2>
       <p>Hi ${escapeHtml(r.first_name)},</p>
       <p>This is a reminder that the remaining balance of <strong>$${balance}</strong> is due for your reservation on <strong>${date}</strong>.</p>
-      <p>Please contact us at martinbishopfield@gmail.com to arrange payment.</p>
-      <p>You may also pay by check:<br>Make payable to: Martin Bishop Field<br>Mail to: 225 State Street, Guilford, CT 06437</p>`,
+      <p>Please contact us at martinbishopfield@gmail.com to arrange payment.</p>`,
   });
 }
 

@@ -61,7 +61,7 @@ function AddReservationModal({ token, onClose, onAdded }: { token: string; onClo
     email: '',
     phone: '',
     event_date: '',
-    payment_type: 'check' as 'deposit' | 'full' | 'check',
+    payment_type: 'deposit' as 'deposit' | 'full',
     notes: '',
     paid_in_full: false,
     amount_total: '',
@@ -127,7 +127,6 @@ function AddReservationModal({ token, onClose, onAdded }: { token: string; onClo
             <select value={form.payment_type} onChange={e => set('payment_type', e.target.value)}>
               <option value="deposit">Deposit</option>
               <option value="full">Full</option>
-              <option value="check">Check</option>
             </select>
           </label>
           <label>Notes <textarea value={form.notes} onChange={e => set('notes', e.target.value)} /></label>

@@ -113,6 +113,7 @@
 
 @media (max-width: 580px) {
   .calendar {
-    display: none;
+    width: 100%;
+    box-sizing: border-box;
   }
 }

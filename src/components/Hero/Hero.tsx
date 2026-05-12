@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import './Hero.css';
 
 const HERO_IMAGES = [
-  'https://martin-bishopfield.com/wp-content/uploads/2016/10/pa160506.jpeg',
-  'https://martin-bishopfield.com/wp-content/uploads/2021/05/6dbc31b9-4353-4884-bf10-3e6e552659ef.jpeg',
-  'https://martin-bishopfield.com/wp-content/uploads/2016/10/pa160515.jpeg',
+  '/images/pa160506.jpeg',
+  '/images/hero2.jpeg',
+  '/images/pa160515.jpeg',
 ];
 
 export function Hero() {

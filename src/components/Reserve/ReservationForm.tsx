@@ -24,13 +24,13 @@ interface FormData {
   email: string;
   phone: string;
   notes: string;
-  paymentType: 'deposit' | 'full' | 'check';
+  paymentType: 'deposit' | 'full';
 }
 
 interface ReservationFormProps {
   selectedDate: string;
   stripePromise: Promise<Stripe | null>;
-  onSuccess: (data: { firstName: string; email: string; date: string; paymentType: 'deposit' | 'full' | 'check' }) => void;
+  onSuccess: (data: { firstName: string; email: string; date: string; paymentType: 'deposit' | 'full' }) => void;
   onError: (message: string) => void;
 }
 
@@ -57,7 +57,6 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
   const paymentRef = useRef<PaymentHandle>(null);
 
   const rate = selectedDate ? getRate(selectedDate) : 0;
-  const isCardPayment = form.paymentType !== 'check';
   const chargeAmount = form.paymentType === 'full' ? rate : DEPOSIT_AMOUNT;
   const elementsOptions = {
     appearance: ELEMENTS_APPEARANCE,
@@ -82,7 +81,7 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) &&
     form.phone.trim() &&
     selectedDate &&
-    (!isCardPayment || paymentReady);
+    paymentReady;
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -91,26 +90,7 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
     setSubmitting(true);
 
     try {
-      if (form.paymentType === 'check') {
-        const res = await fetch('/api/reservations/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            first_name: form.firstName,
-            last_name: form.lastName,
-            email: form.email,
-            phone: form.phone,
-            event_date: selectedDate,
-            payment_type: 'check',
-            notes: form.notes || null,
-          }),
-        });
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || 'Failed to create reservation');
-        }
-        onSuccess({ firstName: form.firstName, email: form.email, date: selectedDate, paymentType: 'check' });
-      } else {
+      {
         let secret = clientSecretRef.current;
         if (!secret) {
           const res = await fetch('/api/reservations/create-intent', {
@@ -238,11 +218,9 @@ export function ReservationForm({ selectedDate, stripePromise, onSuccess, onErro
             </label>
           </fieldset>
 
-          {isCardPayment && (
-            <Elements key={chargeAmount} stripe={stripePromise} options={elementsOptions}>
-              <PaymentSection ref={paymentRef} onReady={setPaymentReady} />
-            </Elements>
-          )}
+          <Elements key={chargeAmount} stripe={stripePromise} options={elementsOptions}>
+            <PaymentSection ref={paymentRef} onReady={setPaymentReady} />
+          </Elements>
 
           <p className="balance-note">
             The full balance is due within 30 days of your event.
