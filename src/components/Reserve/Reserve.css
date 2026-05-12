@@ -17,6 +17,7 @@
 .reserve-left {
   position: sticky;
   top: 100px;
+  min-width: 0;
 }
 
 .date-input-field {
@@ -26,6 +27,7 @@
 .date-input-field input {
   display: block;
   width: 100%;
+  max-width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
