@@ -135,4 +135,8 @@
   .reserve-left {
     position: static;
   }
+
+  .date-input-field {
+    display: none;
+  }
 }

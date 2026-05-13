@@ -258,14 +258,31 @@ async function addReservation(request: Request, env: Env) {
   ).bind(body.event_date).first();
   if (existing) return errorResponse('This date is already reserved');
 
+  const amountTotal = (body.amount_total as number) || 0;
+  const amountPaid = (body.amount_paid as number) || 0;
+  const paidInFull = body.paid_in_full || 0;
+  const paymentType = (body.payment_type as string) || 'deposit';
+
   const result = await env.DB.prepare(
     `INSERT INTO reservations (first_name, last_name, email, phone, event_date, payment_type, notes, paid_in_full, amount_total, amount_paid)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     body.first_name || '', body.last_name || '', body.email || '', body.phone || '',
-    body.event_date || '', body.payment_type || 'deposit', body.notes || null,
-    body.paid_in_full || 0, body.amount_total || 0, body.amount_paid || 0,
+    body.event_date || '', paymentType, body.notes || null,
+    paidInFull, amountTotal, amountPaid,
   ).run();
+
+  await sendConfirmationEmail(env, {
+    first_name: body.first_name as string,
+    last_name: body.last_name as string,
+    email: body.email as string,
+    phone: (body.phone as string) || '',
+    event_date: body.event_date as string,
+    payment_type: paymentType,
+    notes: (body.notes as string) || null,
+    amount_total: amountTotal,
+    amount_paid: amountPaid,
+  });
 
   return jsonResponse({ reservationId: result.meta.last_row_id });
 }
